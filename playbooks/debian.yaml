@@ -1,0 +1,14 @@
+---
+- name: Post-install setup after fresh installation of Debian GNU/Linux   # ...to my very liking
+  hosts: localhost
+  connection: local
+
+  roles:
+    - role: common
+      tags: common
+    - role: framework
+      tags: framework
+    - role: desktop
+      tags: desktop
+    - role: imobiledevice
+      tags: imobiledevice
