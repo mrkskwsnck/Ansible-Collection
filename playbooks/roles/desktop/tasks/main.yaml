@@ -1,0 +1,4 @@
+---
+- name: Import KDE Plasma related tasks
+  import_tasks: kde.yaml
+  when: ansible_facts.env['XDG_SESSION_DESKTOP'] == 'KDE'

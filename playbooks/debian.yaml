@@ -1,0 +1,8 @@
+---
+- name: Post-install setup after fresh installation of Debian GNU/Linux   # ...to my very liking
+  hosts: localhost
+  connection: local
+
+  roles:
+    - role: desktop
+      tags: desktop
