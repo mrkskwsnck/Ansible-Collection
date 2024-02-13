@@ -31,3 +31,4 @@
         owner: "{{ ansible_user_uid }}"
         group: "{{ ansible_user_gid }}"
         mode: 0644
+        validate: desktop-file-validate %s
