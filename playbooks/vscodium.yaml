@@ -1,0 +1,41 @@
+---
+# VSCodium is a community-driven, freely-licensed binary distribution of Microsoft’s editor VS Code.
+#
+# Playbook based on https://vscodium.com/#install-on-debian-ubuntu-deb-package
+
+- name: Install VSCodium
+  hosts: localhost
+  connection: localhost
+  gather_facts: true
+
+  tasks:
+    - name: Install VSCodium on Debian
+      become: true
+      when: ansible_lsb.id == "Debian"
+
+      block:
+        - name: Add the GPG key of the repository
+          # See https://www.jeffgeerling.com/blog/2022/aptkey-deprecated-debianubuntu-how-fix-ansible
+          # for apt_key deprecation fix
+          ansible.builtin.get_url:
+            url: https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg
+            # Armored keys should use .asc extension, binary should use .gpg
+            dest: /usr/share/keyrings/vscodium-archive-keyring.asc
+            owner: root
+            group: root
+            mode: "0644"
+            checksum: sha256:dbdfd9af3b83b72a24c89160ce7638418142e2cf4736ab53e5061e10070f13c1
+            force: true   # Download every time to fail upon checksum change
+
+        - name: Add the repository
+          ansible.builtin.apt_repository:
+            repo: deb [ signed-by=/usr/share/keyrings/vscodium-archive-keyring.asc ] https://download.vscodium.com/debs vscodium main
+            filename: vscodium
+            state: present
+
+        - name: Update then install vscodium
+          ansible.builtin.apt:
+            update_cache: true
+            cache_valid_time: 3600
+            name: codium
+            state: present
