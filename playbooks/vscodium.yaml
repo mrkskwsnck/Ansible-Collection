@@ -39,3 +39,4 @@
             cache_valid_time: 3600
             name: codium
             state: present
+          ignore_errors: "{{ ansible_check_mode }}"
