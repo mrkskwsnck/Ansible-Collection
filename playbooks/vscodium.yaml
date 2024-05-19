@@ -11,7 +11,7 @@
   tasks:
     - name: Install VSCodium on Debian
       become: true
-      when: ansible_lsb.id == "Debian"
+      when: ansible_os_family == "Debian"
 
       block:
         - name: Add the GPG key of the repository

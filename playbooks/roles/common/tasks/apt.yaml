@@ -1,0 +1,42 @@
+---
+- name: Install common package dependencies
+  when: ansible_distribution == "Debian"
+  tags: apt
+
+  block:
+    - name: Set APT default release for „Testing-Unstable Mix“
+      # Refer to https://wiki.debian.org/DebianUnstable#Can_I_use_Sid_packages_on_.22testing.22.3F for more details
+      ansible.builtin.blockinfile:
+        path: /etc/apt/apt.conf.d/20-tum.conf
+        block: |
+          # Be careful with APT::Default-Release. See https://wiki.debian.org/AptConfiguration#Be_careful_with_APT::Default-Release
+          APT::Default-Release "/^testing(|-security|-updates|-backports)$/";
+        owner: root
+        group: root
+        mode: 0644
+        create: true
+      become: true
+
+    - name: Add unstable sources
+      ansible.builtin.blockinfile:
+        path: /etc/apt/sources.list.d/unstable.list
+        block: |
+          deb http://deb.debian.org/debian unstable main non-free-firmware contrib non-free
+          deb-src http://deb.debian.org/debian unstable main non-free-firmware contrib non-free
+        owner: root
+        group: root
+        mode: 0644
+        create: true
+      become: true
+
+    - name: Update apt cache if needed
+      become: true
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install packages
+      become: true
+      apt:
+        install_recommends: false
+        package: "{{ packages }}"

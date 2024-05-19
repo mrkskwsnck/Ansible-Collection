@@ -1,0 +1,8 @@
+---
+- name: Install dependencies
+  become: true
+  ansible.builtin.apt:
+    install_recommends: false
+    pkg:
+      - python3-psutil
+  tags: become

@@ -1,0 +1,6 @@
+---
+- import_tasks: apt.yaml
+  tags: apt
+
+- import_tasks: gsettings.yaml
+  tags: gsettings

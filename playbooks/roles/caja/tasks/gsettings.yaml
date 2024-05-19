@@ -1,0 +1,6 @@
+---
+- name: Disable automount   # See https://forums.linuxmint.com/viewtopic.php?p=1373497#p1373497
+  community.general.dconf:
+    key: "/org/mate/desktop/media-handling/automount"
+    value: "false"    # Value must be of type string
+    state: present

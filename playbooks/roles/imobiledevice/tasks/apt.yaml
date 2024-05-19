@@ -1,0 +1,11 @@
+---
+- name: Install Libimobiledevice on Debian GNU/Linux    # See https://opensource.com/article/21/8/libimobiledevice-iphone-linux
+  become: true
+  apt:
+    pkg:
+      - usbmuxd
+      - libimobiledevice6
+      - libimobiledevice-utils
+      - ifuse
+  tags: apt
+  when: ansible_distribution == "Debian"

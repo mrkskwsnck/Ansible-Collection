@@ -1,0 +1,30 @@
+---
+- name: Set up „Transparent Encryption For a User's Home Folder“
+  when: ansible_distribution == "Debian"
+  tags: encryption
+
+  block:
+    - name: Install dependencies to provide home folder encryption
+      # See https://wiki.debian.org/TransparentEncryptionForHomeFolder
+      become: true
+      apt:
+        package:
+          - ecryptfs-utils
+          - lsof
+          - rsync
+
+    - name: Load kernel module
+      community.general.modprobe:
+        name: ecryptfs
+        state: present
+
+    - name: Assisted Encrypted Home Directory
+      debug:
+        msg: "Now one can run `ecryptfs-migrate-home -u $username` to encrypt
+          an existing user's home directory. Also, one user can reveal/backup
+          its own recovery passphrase by running `ecryptfs-unwrap-passphrase`. Refer to
+          https://wiki.debian.org/TransparentEncryptionForHomeFolder#Assisted_Encrypted_Home_Directory
+          for more details."
+      tags:
+        - debug
+        - msg

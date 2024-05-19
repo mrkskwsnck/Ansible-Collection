@@ -1,0 +1,73 @@
+---
+- name: Import power related tasks
+  import_tasks: power.yaml
+  tags: power
+
+- name: Import fingerprint sensor related tasks
+  import_tasks: fingerprint.yaml
+  tags: fingerprint
+
+#- name: Set up suspend mode power savings
+#  when: ansible_distribution == "Debian"
+#  tags: power
+#  block:
+##    - name: Possibly, disable ACPI for NVMe drive
+##      # Workaround if NVMe drive does not successfully wake from the deep sleep
+##      become: true
+##      command:
+##        argv:
+##          - kernelstub
+##          - --add-options
+##          - nvme.noacpi=1
+##      when: nvme_noacpi is defined and nvme_noacpi | bool   # (De)activate by environment variable 'nvme_noacpi'
+##      notify: Reboot required
+#
+#    - name: Look up mem_sleep file
+#      ansible.builtin.debug:
+#        msg: "{{ lookup('ansible.builtin.file', '/sys/power/mem_sleep') }}"
+#      register: reg_mem_sleep
+#      tags: memsleep
+#
+#    - name: Append mem_sleep_default=deep to GRUB_CMDLINE_LINUX_DEFAULT line
+#      # See https://www.kernel.org/doc/html/v4.18/admin-guide/pm/sleep-states.html
+#      # and https://community.frame.work/t/ubuntu-21-04-on-the-framework-laptop/2722/8
+#      become: true
+#      ansible.builtin.lineinfile:
+#        path: /etc/default/grub
+#        regex: ^(GRUB_CMDLINE_LINUX_DEFAULT=")(.*)(")$
+#        line: \1\2 mem_sleep_default=deep\3
+#        backrefs: true
+#      notify:
+#        - Update grub
+#        - Reboot required
+#      when: "'[deep]' not in reg_mem_sleep.msg"
+#      tags: memsleep
+#
+#- name: Enable microphone input on the 3.5mm jack
+#  # See https://community.frame.work/t/ubuntu-21-04-on-the-framework-laptop/2722/58
+#  become: true
+#  lineinfile:
+#    path: /etc/modprobe.d/alsa-base.conf
+#    line: options snd-hda-intel model=dell-headset-multi
+#    state: present
+#  notify: Reboot required
+#  tags: audio
+#
+#- name: Enable Wayland
+#  block:
+#    - name: Enable Wayland for GNOME
+#      become: true
+#      lineinfile:
+#        path: /etc/gdm3/custom.conf
+#        regexp: ^WaylandEnable=false$
+#        line: WaylandEnable=true
+#      notify: Reboot required
+#
+#    - name: Enable Wayland for Firefox by environment variable
+#      become: false
+#      lineinfile:
+#        path: ~/.profile
+#        line: export MOZ_ENABLE_WAYLAND=1
+#        state: present
+#  tags: wayland
+#

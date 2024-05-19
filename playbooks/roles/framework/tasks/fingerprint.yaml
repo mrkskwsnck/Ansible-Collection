@@ -1,0 +1,26 @@
+---
+- name: Set-up fingerprint sensor
+  # Tested with 11th gen Frame.work laptop
+  when: ansible_distribution == "Debian"
+  tags: fprintd
+
+  block:
+    - name: Install fingerprint dependency
+      become: true
+      apt:
+        name: libpam-fprintd
+        state: present
+      tags: apt
+
+    - name: Enable module for fingerprint authentication
+      become: true
+      command:
+        argv:
+          - pam-auth-update
+          - --enable
+          - fprintd
+
+    - name: Enroll fingerprint
+      debug:
+        msg: To scan one fingerprint run fprintd-enroll
+          and follow the on-screen instruction

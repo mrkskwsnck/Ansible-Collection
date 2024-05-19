@@ -1,0 +1,16 @@
+---
+- name: Make Apple's arbitary iMobile device usable with GNU/Linux
+  block:
+  - name: Import APT related tasks
+    import_tasks: apt.yaml
+
+  - name: Make a directory as a mount point for your iOS device   # mkdir ~/iPhone
+    file:
+      path: ~/iPhone
+      state: directory
+
+  - name: Mount the device
+    debug:
+      msg: Run `ifuse ~/iPhone` to mount your iMobile device.
+        Your device prompts you to trust the computer you're using to access it.
+        Once the trust issue is resolved, you see new mount point icons on your desktop or in your file browser.

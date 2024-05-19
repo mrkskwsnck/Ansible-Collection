@@ -1,0 +1,8 @@
+---
+- name: Managing Freifunk-Knoten
+  hosts: freifunk
+  gather_facts: false
+
+  roles:
+    - role: firmware
+      tags: firmware

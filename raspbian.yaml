@@ -1,0 +1,44 @@
+---
+- name: Post-install setup after fresh installation of GNU/Linux Raspberry Pi OS
+  hosts: raspberrypis
+  gather_facts: false
+
+  tasks:
+    - name: Set up unattended upgrades
+      # See https://www.cyberciti.biz/faq/how-to-keep-debian-linux-patched-with-latest-security-updates-automatically/
+      # And https://wiki.debian.org/UnattendedUpgrades
+      become: true
+      block:
+        - name: Install dependency
+          apt:
+            name: unattended-upgrades
+            state: present
+
+        - name: Configure unattended-upgrades service to ones liking
+          debug:
+            msg: "Edit `{{ item }}` file"
+          with_items:
+            - /etc/apt/apt.conf.d/50unattended-upgrades
+            - /etc/apt/apt.conf.d/20auto-upgrades
+            - /etc/apt/listchanges.conf
+
+        - name: Enable service
+          systemd:
+            name: unattended-upgrades
+            enabled: true
+            state: started
+          ignore_errors: "{{ ansible_check_mode }}"
+
+        - name: Test unattended-upgrades service
+          command:
+            argv:
+              - unattended-upgrades
+              - --dry-run
+              - --debug
+        - name: Consider reviewing the logs
+          debug:
+            msg: "View `{{ item }}` file"
+          with_items:
+            - /var/log/unattended-upgrades/unattended-upgrades.log
+            - /var/log/unattended-upgrades/unattended-upgrades-dpkg.log
+            - /var/log/unattended-upgrades/unattended-upgrades-shutdown.log

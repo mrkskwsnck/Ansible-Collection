@@ -1,0 +1,8 @@
+---
+- name: Import APT related tasks
+  import_tasks: apt.yaml
+  tags: apt
+
+- name: Import security related tasks
+  import_tasks: security.yaml
+  tags: security

@@ -1,0 +1,37 @@
+---
+- name: Gluon version
+  block:
+    - name: Peek Gluon version
+      raw: cat /lib/gluon/gluon-version
+      register: cat_result
+      changed_when: false
+
+    - name: Current Gluon version
+      debug:
+        msg: "{{ cat_result.stdout_lines[0] }}'"
+
+- name: Gluon release
+  block:
+    - name: Peek Gluon release
+      raw: cat /lib/gluon/release
+      register: cat_result
+      changed_when: false
+
+    - name: Current Gluon release
+      debug:
+        msg: "{{ cat_result.stdout_lines[0] }}'"
+
+- name: autoupdater status
+  block:
+    - name: Peek autoupdater status
+      raw: uci get autoupdater.settings.enabled
+      register: uci_result
+      changed_when: false
+
+    - name: Current autoupdater status
+      debug:
+        msg: "autoupdater.settings.enabled='{{ uci_result.stdout_lines[0] }}'"
+
+    - name: Disable autoupdater
+      raw: uci set autoupdater.settings.enabled=0 && uci commit autoupdater
+      tags: autoupdateroff

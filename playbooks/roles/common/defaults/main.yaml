@@ -1,0 +1,34 @@
+---
+packages:
+  - ansible
+  - ansible-lint
+  - apt-file
+  - apt-listbugs
+  - apt-listchanges
+  - ascii
+  - bash-completion
+  - bat
+  - ccdiff
+  - cowsay
+  - debian-goodies    # i.e dpigs
+  - di
+  - fd-find
+  - fdupes
+  - fzf
+  - geany-plugins
+  - git
+  - gitg
+  - gitk
+  - goxkcdpwgen
+  - htop
+  - jdupes
+  - jq
+  - most
+  - nmap
+  - pinfo
+  - pydf
+  - python3-pip
+  - python3-psutil
+  - python3-venv
+  - trash-cli
+  - xkcdpass
