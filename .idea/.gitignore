@@ -1,0 +1,12 @@
+# See https://intellij-support.jetbrains.com/hc/en-us/articles/206544839-How-to-manage-projects-under-Version-Control-Systems
+# for how to manage projects under Version Control Systems
+#
+# Default ignored files
+/shelf/
+/usage.statistics.xml
+/workspace.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml

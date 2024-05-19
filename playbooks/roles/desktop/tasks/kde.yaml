@@ -4,30 +4,31 @@
   block:
     - name: Install ksshaskpass
       become: true
-      apt:
+      ansible.builtin.apt:
         name: ksshaskpass
         state: present
     
     - name: Create drop-in folder for systemd environment files
       file:
-        path: "{{ ansible_facts.env['HOME'] }}/.config/environment.d"
-        owner: "{{ ansible_facts.env['USER'] }}"
-        group: "{{ ansible_facts.env['USER'] }}"
+        path: "{{ ansible_user_dir }}/.config/environment.d"
+        owner: "{{ ansible_user_uid }}"
+        group: "{{ ansible_user_gid }}"
         mode: 0755
         state: directory
 
     - name: Copy systemd environment file
       copy:
         src: ssh_askpass.conf
-        dest: "{{ ansible_facts.env['HOME'] }}/.config/environment.d/ssh_askpass.conf"
-        owner: "{{ ansible_facts.env['USER'] }}"
-        group: "{{ ansible_facts.env['USER'] }}"
+        dest: "{{ ansible_user_dir }}/.config/environment.d/ssh_askpass.conf"
+        owner: "{{ ansible_user_uid }}"
+        group: "{{ ansible_user_gid }}"
         mode: 0644
     
     - name: Copy desktop entry for autostart
       copy:
         src: ssh-add.desktop
-        dest: "{{ ansible_facts.env['HOME'] }}/.config/autostart/ssh-add.desktop"
-        owner: "{{ ansible_facts.env['USER'] }}"
-        group: "{{ ansible_facts.env['USER'] }}"
+        dest: "{{ ansible_user_dir }}/.config/autostart/ssh-add.desktop"
+        owner: "{{ ansible_user_uid }}"
+        group: "{{ ansible_user_gid }}"
         mode: 0644
+        validate: desktop-file-validate %s
