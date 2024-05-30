@@ -1,0 +1,36 @@
+---
+- name: Flatpak
+  hosts: localhost
+  connection: local
+
+  tasks:
+    - name: Install Flatpak on Debian   # See also https://flathub.org/setup/Debian
+      when: ansible_os_family == 'Debian'
+      notify: Reboot required
+      block:
+        - name: Install Flatpak
+          ansible.builtin.apt:
+            name: flatpak
+            state: present
+        
+        - name: Install the GNOME Software Flatpak plugin
+          when: lookup('env', 'XDG_CURRENT_DESKTOP') == 'GNOME'
+          ansible.builtin.apt:
+            name: gnome-software-plugin-flatpak
+            state: present
+
+        - name: Install the Plasma Discover Flatpak backend
+          when: lookup('env', 'XDG_CURRENT_DESKTOP') == 'KDE'
+          ansible.builtin.apt:
+            name: plasma-discover-backend-flatpak
+            state: present
+
+  handlers:
+    - name: Reboot required
+      become: true
+      ansible.builtin.file:
+        path: /var/run/reboot-required
+        owner: root
+        group: root
+        mode: "0644"
+        state: touch
