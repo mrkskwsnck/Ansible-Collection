@@ -1,0 +1,26 @@
+---
+# Based on the article „How to Connect to a Debian 10/11 Server via Remote Desktop Connection using xRDP“
+# See https://bytexd.com/xrdp-debian/ for reference
+- name: Enable Remote Desktop Protocol (RDP)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  tasks:
+    - name: Install xRDP on Debian
+      block:
+        - name: Install xRDP
+          become: true
+          when:
+            - ansible_lsb.id == 'Debian'
+            - ansible_lsb.codename in ('buster', 'bullseye', 'bookworm', 'trixie')
+          ansible.builtin.apt:
+            name: xrdp
+            state: present
+            update_cache: true
+            cache_valid_time: 3600
+
+        # - name:
+        #   service:
+        #     name: xrdp
+        #     state: started
