@@ -8,9 +8,9 @@
 
   tasks:
     - name: Install xRDP on Debian
+      become: true
       block:
-        - name: Install xRDP
-          become: true
+        - name: Install xRDP package
           when:
             - ansible_lsb.id == 'Debian'
             - ansible_lsb.codename in ('buster', 'bullseye', 'bookworm', 'trixie')
@@ -20,7 +20,23 @@
             update_cache: true
             cache_valid_time: 3600
 
-        # - name:
-        #   service:
-        #     name: xrdp
-        #     state: started
+        - name: Start xRDP service
+          systemd_service:
+            name: xrdp
+            state: started
+
+        # xRDP uses the /etc/ssl/private/ssl-cert-snakeoil.key file, which belongs to the ssl-cert group.
+        # As such, we need to add the xRDP user to that group.
+        - name:
+          ansible.builtin.user:
+            name: xrdp
+            groups: ssl-cert
+
+        - name: Configure Firewall for xRDP
+          community.general.ufw:
+            rule: allow
+            port: 3389
+
+        - name: RTFM
+          debug:
+            msg: man xrdp.ini
