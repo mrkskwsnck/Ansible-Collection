@@ -8,9 +8,9 @@
 
   tasks:
     - name: Install xRDP on Debian
+      become: true
       block:
-        - name: Install xRDP
-          become: true
+        - name: Install xRDP package
           when:
             - ansible_lsb.id == 'Debian'
             - ansible_lsb.codename in ('buster', 'bullseye', 'bookworm', 'trixie')
@@ -19,8 +19,54 @@
             state: present
             update_cache: true
             cache_valid_time: 3600
+          notify: Restart xRDP service
 
-        # - name:
-        #   service:
-        #     name: xrdp
-        #     state: started
+        # xRDP uses the /etc/ssl/private/ssl-cert-snakeoil.key file, which belongs to the ssl-cert group.
+        # As such, we need to add the xRDP user to that group.
+        - name:
+          ansible.builtin.user:
+            name: xrdp
+            groups: ssl-cert
+
+        - name: Configure Firewall for xRDP
+          community.general.ufw:
+            rule: allow
+            port: 3389
+
+        - name: RTFM
+          debug:
+            msg: man xrdp.ini
+          notify: Restart xRDP service
+
+    - name: Set-up your preferred session manager
+      block:
+        - name: Gather list of available session managers
+          command:
+            argv:
+              - update-alternatives
+              - --list
+              - x-session-manager
+          changed_when: false
+          register: session_managers
+
+        - name: List of available session managers to choose from
+          debug:
+            var: session_managers.stdout_lines
+
+    - name: Connecting to your remote Debian machine
+      debug:
+        msg: >-
+          Refer to
+          https://bytexd.com/xrdp-debian/#step-3-connecting-to-your-debian-10-11-machine-using-remote-desktop-environment
+          for getting to knowing how to achieve that specific task
+
+    - name: Pitfalls
+      block:
+        - name: Foo
+          debug: msg=Bar
+
+  handlers:
+    - name: Restart xRDP service
+      systemd_service:
+        name: xrdp
+        state: restarted
