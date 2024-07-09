@@ -6,6 +6,7 @@
   vars_prompt:
     - name: autoupdater_settings_enabled
       prompt: Enable (1) or disable (0) autoupdater?
+      default: 1
       private: false
 
   tasks:
