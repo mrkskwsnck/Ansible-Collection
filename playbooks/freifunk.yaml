@@ -45,3 +45,9 @@
 
         - name: "Set prompted autoupdater status to {{ autoupdater_settings_enabled }}"
           raw: "uci set autoupdater.settings.enabled={{ autoupdater_settings_enabled }} && uci commit autoupdater"
+
+    - name: Handle lights
+      tags: lights
+      block:
+        - name: Turn off lights
+          raw: echo 0 >/sys/class/leds/blue:dome/brightness
