@@ -1,0 +1,21 @@
+---
+- name: Enable Wayland for GNOME
+  become: true
+  community.general.ini_file:
+    path: /etc/gdm3/custom.conf
+    section: daemon
+    option: WaylandEnable
+    value: "true"   # Literally makes it lowercase
+    mode: '0644'
+    backup: true
+  when: ansible_facts.env['XDG_CURRENT_DESKTOP'] == 'GNOME'
+  notify: Reboot required
+
+- name: Enable Wayland for Firefox by environment variable
+  become: false
+  lineinfile:
+    create: true
+    path: "{{ ansible_user_dir }}/.config/environment.d/mozilla.conf"
+    line: MOZ_ENABLE_WAYLAND=1
+    state: present
+  when: ansible_distribution == 'Debian'
