@@ -5,7 +5,7 @@
 
 - name: Install VSCodium
   hosts: localhost
-  connection: localhost
+  connection: local
   gather_facts: true
 
   tasks:
