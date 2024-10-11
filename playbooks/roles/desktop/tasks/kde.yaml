@@ -18,8 +18,8 @@
 
     - name: Copy systemd environment file
       copy:
-        src: ssh_askpass.conf
-        dest: "{{ ansible_user_dir }}/.config/environment.d/ssh_askpass.conf"
+        src: ssh-askpass.conf
+        dest: "{{ ansible_user_dir }}/.config/environment.d/ssh-askpass.conf"
         owner: "{{ ansible_user_uid }}"
         group: "{{ ansible_user_gid }}"
         mode: 0644
@@ -31,4 +31,5 @@
         owner: "{{ ansible_user_uid }}"
         group: "{{ ansible_user_gid }}"
         mode: 0644
-        validate: desktop-file-validate %s
+        # TODO Validate does not comply to tempfile w/o .desktop extension
+        # validate: desktop-file-validate %s

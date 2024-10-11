@@ -6,12 +6,3 @@
   changed_when:
     - reg_update_grub.stderr.endswith('done')
     - reg_update_grub.rc == 0
-
-- name: Reboot required
-  become: true
-  ansible.builtin.file:
-    path: /var/run/reboot-required
-    owner: root
-    group: root
-    mode: "0644"
-    state: touch

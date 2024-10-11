@@ -1,0 +1,11 @@
+---
+- name: Tweak Wayland related issues
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  
+  roles:
+    - role: common
+      tags: common
+    - role: desktop
+      tags: desktop

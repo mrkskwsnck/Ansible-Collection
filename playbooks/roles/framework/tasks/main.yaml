@@ -52,22 +52,3 @@
 #    state: present
 #  notify: Reboot required
 #  tags: audio
-#
-#- name: Enable Wayland
-#  block:
-#    - name: Enable Wayland for GNOME
-#      become: true
-#      lineinfile:
-#        path: /etc/gdm3/custom.conf
-#        regexp: ^WaylandEnable=false$
-#        line: WaylandEnable=true
-#      notify: Reboot required
-#
-#    - name: Enable Wayland for Firefox by environment variable
-#      become: false
-#      lineinfile:
-#        path: ~/.profile
-#        line: export MOZ_ENABLE_WAYLAND=1
-#        state: present
-#  tags: wayland
-#

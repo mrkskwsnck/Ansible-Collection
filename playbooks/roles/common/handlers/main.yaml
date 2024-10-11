@@ -1,0 +1,16 @@
+---
+- name: Update apt cache if needed
+  become: true
+  apt:
+    update_cache: true
+    cache_valid_time: 3600
+  listen: apt update
+
+- name: Reboot required
+  become: true
+  ansible.builtin.file:
+    path: /var/run/reboot-required
+    owner: root
+    group: root
+    mode: "0644"
+    state: touch
