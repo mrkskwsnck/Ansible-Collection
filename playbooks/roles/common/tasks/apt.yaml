@@ -22,18 +22,12 @@
         path: /etc/apt/sources.list.d/unstable.list
         block: |
           deb http://deb.debian.org/debian unstable main non-free-firmware contrib non-free
-          deb-src http://deb.debian.org/debian unstable main non-free-firmware contrib non-free
+          # deb-src http://deb.debian.org/debian unstable main non-free-firmware contrib non-free
         owner: root
         group: root
         mode: 0644
         create: true
       become: true
-
-    - name: Update apt cache if needed
-      become: true
-      apt:
-        update_cache: true
-        cache_valid_time: 3600
 
     - name: Install packages
       become: true

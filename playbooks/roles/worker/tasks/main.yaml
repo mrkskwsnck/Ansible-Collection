@@ -1,0 +1,20 @@
+---
+- name: Download PUBKEY for ZDV sources
+  become: true
+  get_url:
+    url: http://debianbuild64.zdv.uni-mainz.de/debianbuild64.zdv.uni-mainz.de.asc
+    dest: /etc/apt/trusted.gpg.d/debianbuild64.zdv.uni-mainz.de.asc
+    mode: '0644'
+    checksum: sha256:32bbfff16ea8d15d563afeae633b1405d3ea8cf7ffade8e6700304ab5a087d5f
+
+- name: Add ZDV sources
+  ansible.builtin.blockinfile:
+    path: /etc/apt/sources.list.d/zdv.list
+    block: |
+      deb http://debianbuild64.zdv.uni-mainz.de/aptly/ {{ version_codename }} main
+    owner: root
+    group: root
+    mode: 0644
+    create: true
+  become: true
+  notify: apt update
