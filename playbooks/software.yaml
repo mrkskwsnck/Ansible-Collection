@@ -12,3 +12,7 @@
     - name: Import Signal related installation tasks
       ansible.builtin.import_tasks: tasks/signal.yaml
       tags: signal
+
+    - name: Import VSCodium related installation tasks
+      ansible.builtin.import_tasks: tasks/vscodium.yaml
+      tags: vscodium
