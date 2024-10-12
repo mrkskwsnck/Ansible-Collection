@@ -1,0 +1,36 @@
+---
+# NOTE: These instructions only work for 64-bit Debian-based
+# Linux distributions such as Ubuntu, Mint etc.
+
+- name: Install Signal Messenger for Desktop
+  become: true
+  when: ansible_os_family == "Debian"
+
+  block:
+    - name: Install Signal's official public software signing key
+      # See https://www.jeffgeerling.com/blog/2022/aptkey-deprecated-debianubuntu-how-fix-ansible
+      # for apt_key deprecation fix
+      ansible.builtin.get_url:
+        url: https://updates.signal.org/desktop/apt/keys.asc
+        # Armored keys should use .asc extension, binary should use .gpg
+        dest: /usr/share/keyrings/signal-desktop-keyring.asc
+        owner: root
+        group: root
+        mode: "0644"
+        checksum: sha256:2aca20b81a56ba0fbe24bdf58a45023e58a38392d885068afe596785ccd95491
+        force: true   # Download every time to fail upon checksum change
+
+    - name: Add Signal's repository to your list of repositories
+      ansible.builtin.apt_repository:
+        repo: deb [arch=amd64 signed-by=/usr/share/keyrings/signal-desktop-keyring.asc] https://updates.signal.org/desktop/apt xenial main
+        filename: signal-xenial
+        state: present
+    
+    - name: Force all notified handlers to run at this point, not waiting for normal sync points
+      ansible.builtin.meta: flush_handlers
+
+    - name: Install Signal
+      ansible.builtin.apt:
+        name: signal-desktop
+        state: present
+      ignore_errors: "{{ ansible_check_mode }}"

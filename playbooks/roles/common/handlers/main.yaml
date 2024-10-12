@@ -1,7 +1,7 @@
 ---
-- name: Update apt cache if needed
+- name: Update apt cache (package database) if needed
   become: true
-  apt:
+  ansible.builtin.apt:
     update_cache: true
     cache_valid_time: 3600
   listen: apt update
