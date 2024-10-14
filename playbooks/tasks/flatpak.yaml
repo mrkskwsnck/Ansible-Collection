@@ -1,0 +1,36 @@
+---
+- name: Install Flatpak on Debian   # See also https://flathub.org/setup/Debian
+  become: true
+  when: ansible_os_family == 'Debian'
+  notify: Reboot required
+  block:
+    - name: Install Flatpak
+      ansible.builtin.apt:
+        name: flatpak
+        state: present
+
+    - name: Install the GNOME Software Flatpak plugin
+      when: lookup('env', 'XDG_CURRENT_DESKTOP') == 'GNOME'
+      ansible.builtin.apt:
+        name: gnome-software-plugin-flatpak
+        state: present
+
+    - name: Install the Plasma Discover Flatpak backend
+      when: lookup('env', 'XDG_CURRENT_DESKTOP') == 'KDE'
+      ansible.builtin.apt:
+        name: plasma-discover-backend-flatpak
+        state: present
+
+    - name: Install the Plasma System Settings module
+      when: lookup('env', 'XDG_CURRENT_DESKTOP') == 'KDE'
+      ansible.builtin.apt:
+        name: kde-config-flatpak
+        state: present
+
+    - name: Add the Flathub repository
+      community.general.flatpak_remote:
+        name: flathub
+        flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+        method: system
+        state: present
+      ignore_errors: "{{ ansible_check_mode }}"   # flatpak executable not present

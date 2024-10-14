@@ -6,11 +6,24 @@
     cache_valid_time: 3600
   listen: apt update
 
-- name: Reboot required
+- name: Write reboot-required file
   become: true
-  ansible.builtin.file:
-    path: /var/run/reboot-required
+  ansible.builtin.copy:
+    content: "*** System restart required ***\n"    # Typically this file is empty ¯\_(ツ)_/¯
+    dest: /var/run/reboot-required
     owner: root
     group: root
     mode: "0644"
-    state: touch
+  listen: Reboot required
+
+- name: Write reboot-required.pkgs file
+  become: true
+  ansible.builtin.lineinfile:
+    path: /var/run/reboot-required.pkgs
+    regexp: ^flatpak
+    line: "flatpak"
+    owner: root
+    group: root
+    mode: "0644"
+    create: true
+  listen: Reboot required

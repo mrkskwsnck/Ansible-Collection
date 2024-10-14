@@ -9,6 +9,10 @@
       tags: common
 
   tasks:
+    - name: Import Flatpak related installation tasks
+      ansible.builtin.import_tasks: tasks/flatpak.yaml
+      tags: flatpak
+
     - name: Import Signal related installation tasks
       ansible.builtin.import_tasks: tasks/signal.yaml
       tags: signal
