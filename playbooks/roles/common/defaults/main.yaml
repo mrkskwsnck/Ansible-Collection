@@ -1,34 +1,41 @@
 ---
-packages:
-  - ansible
-  - ansible-lint
-  - apt-file
-  - apt-listbugs
-  - apt-listchanges
-  - ascii
-  - bash-completion
-  - bat
-  - ccdiff
-  - cowsay
-  - debian-goodies    # i.e dpigs
-  - di
-  - fd-find
-  - fdupes
-  - fzf
-  - geany-plugins
-  - git
-  - gitg
-  - gitk
-  - goxkcdpwgen
-  - htop
-  - jdupes
-  - jq
-  - most
-  - nmap
-  - pinfo
-  - pydf
-  - python3-pip
-  - python3-psutil
-  - python3-venv
-  - trash-cli
-  - xkcdpass
+apt:
+  sources: stable   # One of stable, testing, tum or unstable
+  install_recommends: 'true'
+  pkg:
+    remove:
+      - needrestart-session
+    install:
+      - ansible
+      - ansible-lint
+      - apt-file
+      - apt-listbugs
+      - apt-listchanges
+      - ascii
+      - bash-completion
+      - bat
+      - ccdiff
+      - cowsay
+      - debian-goodies    # i.e dpigs
+      - di
+      - fd-find
+      - fdupes
+      - fzf
+      - geany-plugins
+      - git
+      - gitg
+      - gitk
+      - goxkcdpwgen
+      - htop
+      - jdupes
+      - jq
+      - most
+      - needrestart
+      - nmap
+      - pinfo
+      - pydf
+      - python3-pip
+      - python3-psutil
+      - python3-venv
+      - trash-cli
+      - xkcdpass

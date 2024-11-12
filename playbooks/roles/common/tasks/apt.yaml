@@ -1,9 +1,26 @@
 ---
-- name: Install common package dependencies
+- name: Configure APT
+  become: true
   when: ansible_distribution == "Debian"
-  tags: apt
 
   block:
+    - name: Copy default stable sources
+      ansible.builtin.copy:
+        src: sources.list
+        dest: /etc/apt/sources.list
+        owner: root
+        group: root
+        mode: '0644'
+      tags: sources
+      notify: apt update
+
+    - name: Set install recommends
+      ansible.builtin.lineinfile:
+        path: /etc/apt/apt.conf.d/99synaptic
+        regexp: ^APT::Install-Recommends
+        line: "APT::Install-Recommends \"{{ apt.install_recommends }}\";"
+      tags: conf
+
     - name: Set APT default release for „Testing-Unstable Mix“
       # Refer to https://wiki.debian.org/DebianUnstable#Can_I_use_Sid_packages_on_.22testing.22.3F for more details
       ansible.builtin.blockinfile:
@@ -15,7 +32,9 @@
         group: root
         mode: 0644
         create: true
-      become: true
+      when: apt.sources == 'tum'
+      tags: sources
+      notify: apt update
 
     - name: Add unstable sources
       ansible.builtin.blockinfile:
@@ -27,10 +46,22 @@
         group: root
         mode: 0644
         create: true
-      become: true
+      when: apt.sources in ('tum', 'unstable')
+      tags: sources
+      notify: apt update
+
+- name: Install or remove packages
+  become: true
+  when: ansible_distribution == "Debian"
+  tags: pkg
+  block:
+    - name: Remove packages
+      apt:
+        package: "{{ apt.pkg.remove }}"
+        state: absent
 
     - name: Install packages
-      become: true
       apt:
-        install_recommends: false
-        package: "{{ packages }}"
+        install_recommends: "{{ apt.install_recommends }}"
+        package: "{{ apt.pkg.install }}"
+        state: present
