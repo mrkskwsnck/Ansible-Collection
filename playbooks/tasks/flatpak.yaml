@@ -10,7 +10,7 @@
         state: present
 
     - name: Install the GNOME Software Flatpak plugin
-      when: lookup('env', 'XDG_CURRENT_DESKTOP') == 'GNOME'
+      when: lookup('env', 'XDG_CURRENT_DESKTOP') in ('GNOME', 'ubuntu:GNOME')
       ansible.builtin.apt:
         name: gnome-software-plugin-flatpak
         state: present
