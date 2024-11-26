@@ -16,6 +16,7 @@
     mode: "0644"
   listen: Reboot required
 
+# TODO Variablize pkgs lines
 - name: Write reboot-required.pkgs file
   become: true
   ansible.builtin.lineinfile:
@@ -27,3 +28,9 @@
     mode: "0644"
     create: true
   listen: Reboot required
+
+- name: Reload AppArmor
+  become: true
+  ansible.builtin.systemd_service:
+    name: apparmor.service
+    state: reloaded

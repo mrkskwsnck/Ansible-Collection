@@ -15,6 +15,27 @@
         name: gnome-software-plugin-flatpak
         state: present
 
+    # See https://bugs.launchpad.net/ubuntu/+source/gnome-software/+bug/2061728/comments/5
+    - name: Provide AppArmor profile to fix Flatpak handling from GNOME Software
+      ansible.builtin.blockinfile:
+        path: /etc/apparmor.d/bwrap
+        block: |
+          abi <abi/4.0>,
+          include <tunables/global>
+
+          profile bwrap /usr/bin/bwrap flags=(unconfined) {
+            userns,
+
+            # Site-specific additions and overrides. See local/README for details.
+            include if exists <local/bwrap>
+          }
+        create: true
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload AppArmor
+      when: ansible_distribution == 'Ubuntu'
+
     - name: Install the Plasma Discover Flatpak backend
       when: lookup('env', 'XDG_CURRENT_DESKTOP') == 'KDE'
       ansible.builtin.apt:
@@ -34,3 +55,7 @@
         method: system
         state: present
       ignore_errors: "{{ ansible_check_mode }}"   # flatpak executable not present
+
+    - name: Install the Flatseal flatpak
+      community.general.flatpak:
+        name: com.github.tchx84.Flatseal
