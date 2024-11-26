@@ -1,0 +1,36 @@
+---
+- name: Installing snap on Debian   # See https://snapcraft.io/docs/installing-snap-on-debian
+                                    # and https://snapcraft.io/docs/installing-snap-store-app
+  become: true
+  when: ansible_os_family == 'Debian'
+  notify: Reboot required
+  block:
+    - name: Install the snapd package
+      ansible.builtin.apt:
+        name: snapd
+        state: present
+    
+    - name: Install the GNOME Software Snap plugin
+      when: lookup('env', 'XDG_CURRENT_DESKTOP') in ('GNOME', 'ubuntu:GNOME')
+      ansible.builtin.apt:
+        name: gnome-software-plugin-snap
+        state: present
+
+    - name: Install the Plasma Discover Snap backend
+      when: lookup('env', 'XDG_CURRENT_DESKTOP') == 'KDE'
+      ansible.builtin.apt:
+        name: plasma-discover-backend-snap
+        state: present
+
+    - name: Install some basic snaps
+      community.general.snap:
+        name:
+          - core
+          - hello-world
+          - snap-store
+          - snapd
+        state: present
+    
+    - name: Installing snap finished successfully
+      debug:
+        msg: Snap is now installed and ready to go!
