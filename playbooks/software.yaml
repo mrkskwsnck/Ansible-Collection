@@ -17,6 +17,12 @@
       ansible.builtin.import_tasks: tasks/flatpak.yaml
       tags: flatpak
 
+    - name: Install Lutris
+      become: true
+      ansible.builtin.apt:
+        deb: https://github.com/lutris/lutris/releases/download/v0.5.17/lutris_0.5.17_all.deb
+      tags: lutris
+
     - name: Import Signal related installation tasks
       ansible.builtin.import_tasks: tasks/signal.yaml
       tags: signal
