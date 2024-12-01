@@ -1,0 +1,44 @@
+---
+# NOTE: These instructions only work for 64-bit Debian-based
+# Linux distributions such as Debian, Ubuntu, Mint etc.
+#
+# Playbook based on https://brave.com/linux/
+
+- name: Install Brave on Debian based distros
+  become: true
+  when: ansible_os_family == "Debian"
+
+  block:
+    - name: Install prerequisites
+      ansible.builtin.apt:
+        name: curl
+        state: present
+
+    - name: Install GPG key
+      # See https://www.jeffgeerling.com/blog/2022/aptkey-deprecated-debianubuntu-how-fix-ansible
+      # for apt_key deprecation fix
+      ansible.builtin.get_url:
+        url: https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+        # Armored keys should use .asc extension, binary should use .gpg
+        dest: /usr/share/keyrings/brave-browser-archive-keyring.gpg
+        owner: root
+        group: root
+        mode: "0644"
+        checksum: sha256:b8347b379323f9064f8aee88f5b57f0f9771fc7bef210d28d62812acb667fd12
+        force: true   # Download every time to fail upon checksum change
+
+    - name: Add APT repository
+      ansible.builtin.apt_repository:
+        repo: deb [arch=amd64 signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main
+        filename: brave-browser-release
+        state: present
+      notify: apt update
+
+    - name: Force all notified handlers to run at this point, not waiting for normal sync points
+      ansible.builtin.meta: flush_handlers
+
+    - name: Install Brave
+      ansible.builtin.apt:
+        name: brave-browser
+        state: present
+      ignore_errors: "{{ ansible_check_mode }}"

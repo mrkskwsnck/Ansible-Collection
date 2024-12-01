@@ -9,6 +9,10 @@
       tags: common
 
   tasks:
+    - name: Import Brave related installation tasks
+      ansible.builtin.import_tasks: tasks/brave.yml
+      tags: brave
+
     - name: Import Flatpak related installation tasks
       ansible.builtin.import_tasks: tasks/flatpak.yaml
       tags: flatpak
