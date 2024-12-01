@@ -31,6 +31,12 @@
       ansible.builtin.import_tasks: tasks/snapcraft.yml
       tags: snapcraft
 
+    - name: Install Steam client
+      become: true
+      ansible.builtin.apt:
+        deb: https://cdn.fastly.steamstatic.com/client/installer/steam.deb
+      tags: steam
+
     - name: Import VSCodium related installation tasks
       ansible.builtin.import_tasks: tasks/vscodium.yaml
       tags: vscodium
