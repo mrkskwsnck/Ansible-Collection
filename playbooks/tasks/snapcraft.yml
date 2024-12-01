@@ -29,6 +29,7 @@
           - hello-world
           - snap-store
           - snapd
+          - hello-world
         state: present
     
     - name: Installing snap finished successfully
