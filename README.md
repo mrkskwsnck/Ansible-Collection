@@ -16,9 +16,15 @@ sudo apt install python3-venv
 git clone https://github.com/mrkskwsnck/Ansible-Collection.git
 cd Ansible-Collection
 
+# Set-up your desired Python interpreter, optionally
+# See https://github.com/pyenv/pyenv for how to achieve that
+PYTHON_VERSION=$(python3 --version)
+pyenv install $PYTHON_VERSION
+pyenv local $PYTHON_VERSION
+
 # Create and enter the virtual environment
 python3 -m venv .venv
-source venv/bin/activate
+source .venv/bin/activate
 
 # Install Python and Ansible dependencies inside the virtual environment
 pip3 install --upgrade --requirement requirements.txt pip
