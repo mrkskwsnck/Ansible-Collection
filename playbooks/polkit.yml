@@ -1,0 +1,36 @@
+- name: Add PolicyKit rules
+  hosts: localhost
+  connection: localhost
+  gather_facts: true
+
+  handlers:
+    - name: Reload polkit
+      become: true
+      ansible.builtin.systemd_service:
+        name: polkit
+        state: restarted
+
+  tasks:
+    - name: Enable users group to put block devices into stand-by mode
+      become: true
+      ansible.builtin.copy:
+        content: |
+          // Allow to put a system drive into standby mode without requirement for authorization
+          polkit.addRule(function(action, subject){
+            if (action.id == "org.freedesktop.udisks2.ata-standby-system" &&
+                subject.isInGroup("disk")) {
+              return polkit.Result.YES;
+            }
+          });
+        dest: /etc/polkit-1/rules.d/13-noauth-standby.rules
+        owner: root
+        group: polkitd
+        mode: '0640'
+      notify: Reload polkit
+
+    - name: Make the current user to a member of the disk group
+      become: true
+      ansible.builtin.user:
+        name: "{{ ansible_user_id }}"
+        groups: disk
+        append: true
