@@ -2,7 +2,7 @@
 
 My very own collection of Ansible playbooks, roles and tasks.
 
-## Requirements
+## Prerequisites
 
 ```bash
 # For Debian as a platform
@@ -28,6 +28,8 @@ source .venv/bin/activate
 
 # Install Python and Ansible dependencies inside the virtual environment
 pip3 install --upgrade --requirement requirements.txt pip
+
+# Install Ansible dependecies
 ansible-galaxy collection install --requirements-file requirements.yaml
 
 # Leave virtual environment
@@ -36,7 +38,7 @@ deactivate
 
 ## License
 
-> Copying and distribution of this file, with or without modification,
-> are permitted in any medium without royalty provided the copyright
-> notice and this notice are preserved.  This file is offered as-is,
+> Copying and distribution of this file, with or without modification,  
+> are permitted in any medium without royalty provided the copyright  
+> notice and this notice are preserved.  This file is offered as-is,  
 > without any warranty.
