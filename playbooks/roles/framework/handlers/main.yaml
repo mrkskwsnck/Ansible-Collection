@@ -1,8 +1,0 @@
----
-- name: Update grub
-  become: true
-  ansible.builtin.command: update-grub
-  register: reg_update_grub
-  changed_when:
-    - reg_update_grub.stderr.endswith('done')
-    - reg_update_grub.rc == 0

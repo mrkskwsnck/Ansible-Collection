@@ -1,0 +1,23 @@
+---
+- name: Write reboot-required file
+  become: true
+  ansible.builtin.copy:
+    content: "*** System restart required ***\n"    # Typically this file is empty ¯\_(ツ)_/¯
+    dest: /var/run/reboot-required
+    owner: root
+    group: root
+    mode: "0644"
+  listen: Reboot required
+
+# TODO Variablize pkgs lines
+#- name: Write reboot-required.pkgs file
+#  become: true
+#  ansible.builtin.lineinfile:
+#    path: /var/run/reboot-required.pkgs
+#    regexp: ^flatpak
+#    line: "flatpak"
+#    owner: root
+#    group: root
+#    mode: "0644"
+#    create: true
+#  listen: Reboot required
