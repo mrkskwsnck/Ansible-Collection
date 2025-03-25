@@ -1,0 +1,41 @@
+---
+# Have a look at Linus' complains at YouTube https://youtu.be/OHKKcd3sx2c
+
+- name: Return from modern stand-by to deep sleep mode
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  handlers:
+    - import_tasks: handlers/reboot.yaml
+    - name: Update grub
+      become: true
+      ansible.builtin.command: update-grub
+      register: reg_update_grub
+      changed_when:
+        - reg_update_grub.stderr.endswith('done')
+        - reg_update_grub.rc == 0
+
+  tasks:
+    - name: Return from modern stand-by to deep sleep mode
+      tags: sleepmode
+      block:
+        - name: Look up mem_sleep file
+          ansible.builtin.debug:
+            msg: "{{ lookup('ansible.builtin.file', '/sys/power/mem_sleep') }}"
+          register: reg_mem_sleep
+
+        - name: Append mem_sleep_default=deep to GRUB_CMDLINE_LINUX_DEFAULT line
+          # See https://www.kernel.org/doc/html/v4.18/admin-guide/pm/sleep-states.html
+          # and https://community.frame.work/t/ubuntu-21-04-on-the-framework-laptop/2722/8
+          # (tested with 11th gen Frame.work laptop)
+          become: true
+          ansible.builtin.lineinfile:
+            path: /etc/default/grub
+            regex: ^(GRUB_CMDLINE_LINUX_DEFAULT=")(.*)(")$
+            line: \1\2 mem_sleep_default=deep\3
+            backrefs: true
+          notify:
+            - Update grub
+            - Reboot required
+          when: "'[deep]' not in reg_mem_sleep.msg"
