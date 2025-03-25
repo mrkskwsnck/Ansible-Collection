@@ -18,7 +18,7 @@ cd Ansible-Collection
 
 # Set-up your desired Python interpreter, optionally
 # See https://github.com/pyenv/pyenv for how to achieve that
-PYTHON_VERSION=$(python3 --version)
+PYTHON_VERSION=$(python3 --version | awk '{ print $2 }')
 pyenv install $PYTHON_VERSION
 pyenv local $PYTHON_VERSION
 
