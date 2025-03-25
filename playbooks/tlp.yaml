@@ -1,0 +1,44 @@
+---
+- name: Set-up a mobile computer (i.e. laptop)
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  handlers:
+    - name: Start TLP
+      become: true
+      command: tlp start
+
+  tasks:
+    - name: Set-up TLP
+      become: true
+      block:
+        - name: Remove power-profiles-daemon
+          apt:
+            name: power-profiles-daemon
+            state: absent
+
+        - name: Install TLP
+          apt:
+            name: tlp
+            state: present
+
+        - name: Copy drop-in configuration
+          copy:
+            content: |
+              # See https://linrunner.de/tlp/faq/ppd.html#how-can-i-use-tlp-to-achieve-the-same-effect-as-power-profiles-daemon
+              # for how to configure power-profiles-daemon (ppd) like profiles in TLP.
+
+              PLATFORM_PROFILE_ON_AC=balanced
+              PLATFORM_PROFILE_ON_BAT=low-power
+
+              CPU_ENERGY_PERF_POLICY_ON_AC=balance_performance
+              CPU_ENERGY_PERF_POLICY_ON_BAT=power
+
+              CPU_BOOST_ON_AC=1
+              CPU_BOOST_ON_BAT=0
+            dest: /etc/tlp.d/10-ppd-like.conf
+            owner: root
+            group: root
+            mode: '0644'
+          notify: Start TLP
