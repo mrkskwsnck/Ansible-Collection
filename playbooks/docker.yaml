@@ -1,0 +1,88 @@
+---
+- name: Set-up Docker   # Based on the article https://docs.docker.com/engine/install/debian/
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+
+  tasks:
+    - name: Install Docker Engine on Debian
+      become: true
+      when: ansible_distribution == "Debian"
+      block:
+        - name: Uninstall old versions
+          apt:
+            package:
+              - docker.io
+              - docker-doc
+              - docker-compose
+              - podman-docker
+              - containerd
+              - runc
+            state: absent
+          when: cleanup | default('false') | bool
+
+        - name: Remove leftover
+          file:
+            path: /var/lib/docker/
+            state: absent
+          when: cleanup | default('false') | bool
+
+        - name: Install Docker Engine on Debian stable
+          when: ansible_distribution_release != 'trixie'
+          block:
+            - name: Add Docker's official GPG key
+              block:
+                - file:
+                    path: /etc/apt/keyrings
+                    owner: root
+                    group: root
+                    mode: '0755'
+                    state: directory
+
+                - ansible.builtin.get_url:
+                    # See https://www.jeffgeerling.com/blog/2022/aptkey-deprecated-debianubuntu-how-fix-ansible
+                    # for apt_key deprecation fix
+                    url: https://download.docker.com/linux/debian/gpg
+                    # Armored keys should use .asc extension, binary should use .gpg
+                    dest: /etc/apt/keyrings/docker.asc
+                    owner: root
+                    group: root
+                    mode: "0644"
+                    checksum: sha256:1500c1f56fa9e26b9b8f42452a553675796ade0807cdce11975eb98170b3a570
+                    force: true   # Download every time to fail upon checksum change
+
+
+            - name: Add the repository to Apt sources
+              apt_repository:
+                repo: "deb [arch={% if ansible_architecture == 'x86_64' %}amd64{% else %}{{ ansible_architecture }}{% endif %} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+              failed_when: false
+
+            - name: Install the Docker packages
+              apt:
+                package:
+                  - docker-ce
+                  - docker-ce-cli
+                  - containerd.io
+                  - docker-buildx-plugin
+                  - docker-compose-plugin
+
+        - name: Install Docker Engine on Debian testing
+          when: ansible_distribution_release == 'trixie'
+          block:
+            - name: Install the Docker packages
+              apt:
+                package:
+                  - docker.io
+                  - docker-compose
+
+        - name: Create the `docker' group
+          ansible.builtin.group:
+            name: docker
+            system: true
+
+        - name: Add your user to the `docker' group
+          ansible.builtin.user:
+            name: "{{ ansible_user_id }}"
+            groups: docker
+            append: yes
+
