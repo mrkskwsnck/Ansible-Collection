@@ -1,0 +1,66 @@
+---
+# See https://docs.nitrokey.com/nitrokeys/features/u2f/desktop-login
+
+- name: U2F Desktop Login And Linux User Authentication
+  hosts: localhost
+  connection: local
+
+  handlers:
+    - name: Restart udev
+      systemd_service:
+        name: udev
+        state: restarted
+
+  tasks:
+    - name: Set up the `rules' to recognize the Nitrokey FIDO2
+      get_url:
+        url: https://raw.githubusercontent.com/Nitrokey/nitrokey-udev-rules/main/41-nitrokey.rules
+        dest: /etc/udev/rules.d/41-nitrokey.rules
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '20.04'
+      notify: Restart udev
+
+    - name: Install `libpam-u2f'
+      become: true
+      apt:
+        package: libpam-u2f
+
+    - name: Prepare the Directory
+      file:
+        path: "{{ ansible_env.HOME }}/.config/Nitrokey"
+        state: directory
+
+    - name: Generate the U2F config file
+      debug:
+        msg: 'pamu2fcfg --username={{ ansible_user_id }} >"$HOME/.config/Nitrokey/u2f_keys"'    # TODO: Automate prompt for PIN
+                                                                                                # and write registered output
+
+    - name: Move the U2F config file
+      become: true
+      block:
+        - name: Copy the U2F config file
+          copy:
+            src: "{{ ansible_env.HOME }}/.config/Nitrokey"
+            dest: /etc
+
+#        - name: Remove the U2F config file
+#          copy:
+#            src: "{{ ansible_env.HOME }}/.config/Nitrokey"
+#            state: absent
+
+    - name: Modify the Pluggable Authentication Module `PAM'
+      become: true
+      block:
+        - name: Create drop-in directory
+          file:
+            path: /etc/pam.d
+            state: directory
+
+        - name: Modify the `common-auth' file
+          blockinfile:
+            path: /etc/pam.d/common-auth
+            # Add the following lines at the top of the file
+            block: |
+              # Nitrokey FIDO2 config
+              auth    sufficient pam_u2f.so authfile=/etc/Nitrokey/u2f_keys cue [cue_prompt=Please touch your U2F device] prompt nouserok
+            insertbefore: '# here are the per-package modules \(the "Primary" block\)'
+          when: ansible_distribution == 'Debian' and ansible_distribution_major_version == '12'
