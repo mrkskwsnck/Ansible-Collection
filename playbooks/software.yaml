@@ -28,8 +28,12 @@
       tags: signal
 
     - name: Import snap related installation tasks
-      ansible.builtin.import_tasks: tasks/snapcraft.yml
+      ansible.builtin.import_tasks: tasks/snapcraft.yaml
       tags: snapcraft
+
+    - name: Import Spotify related installation tasks
+      ansible.builtin.import_tasks: tasks/spotify.yaml
+      tags: spotify
 
     - name: Install Steam client
       become: true
