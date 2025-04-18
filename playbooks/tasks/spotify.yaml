@@ -1,0 +1,41 @@
+---
+# Instruction given from https://www.spotify.com/uk/download/linux/
+
+- name: Spotify for Linux on Debian/Ubuntu via command line
+  become: true
+  when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+
+  block:
+    - name: Install prerequisites
+      ansible.builtin.apt:
+        name: curl
+        state: present
+
+    - name: Install GPG key
+      # See https://www.jeffgeerling.com/blog/2022/aptkey-deprecated-debianubuntu-how-fix-ansible
+      # for apt_key deprecation fix
+      ansible.builtin.get_url:
+        url: https://download.spotify.com/debian/pubkey_C85668DF69375001.gpg
+        # Armored keys should use .asc extension, binary should use .gpg
+        dest: /etc/apt/trusted.gpg.d/spotify.asc
+        owner: root
+        group: root
+        mode: "0644"
+        checksum: sha256:616d1e63660022d4c8b502733bdaccee0024bc35c44da5365daebb8c015c8b31
+        force: true   # Download every time to fail upon checksum change
+
+    - name: Add APT repository
+      ansible.builtin.apt_repository:
+        repo: "deb https://repository.spotify.com stable non-free"
+        filename: spotify
+        state: present
+      notify: apt update
+
+    - name: Force all notified handlers to run at this point, not waiting for normal sync points
+      ansible.builtin.meta: flush_handlers
+
+    - name: Install Spotify
+      ansible.builtin.apt:
+        name: spotify-client
+        state: present
+      ignore_errors: "{{ ansible_check_mode }}"
