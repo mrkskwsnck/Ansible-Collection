@@ -1,0 +1,4 @@
+---
+users_desktop_files_dir: "{{ ansible_env.HOME }}/.local/share/applications"
+users_local_bin_dir: "{{ ansible_env.HOME }}/.local/bin"
+users_custom_apps_dir: "{{ ansible_env.HOME }}/Applications"
