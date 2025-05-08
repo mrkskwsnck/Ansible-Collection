@@ -4,6 +4,9 @@
   connection: local
   gather_facts: true
 
+  vars_files:
+    - vars/defaults.yaml
+
   roles:
     - role: common
       tags: common
@@ -12,6 +15,12 @@
     - name: Import Brave related installation tasks
       ansible.builtin.import_tasks: tasks/brave.yml
       tags: brave
+
+    - name: Import Cursor related installation tasks
+      ansible.builtin.import_tasks: tasks/cursor.yaml
+      tags: cursor
+
+    # TODO Install Docker
 
     - name: Import Flatpak related installation tasks
       ansible.builtin.import_tasks: tasks/flatpak.yaml
@@ -44,3 +53,5 @@
     - name: Import VSCodium related installation tasks
       ansible.builtin.import_tasks: tasks/vscodium.yaml
       tags: vscodium
+
+    # TODO Install Wine
