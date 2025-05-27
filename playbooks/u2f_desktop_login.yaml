@@ -34,7 +34,7 @@
 
     - name: Prepare the Directory
       file:
-        path: "{{ ansible_env.HOME }}/.config/Nitrokey"
+        path: "{{ ansible_env.HOME }}/.config/2FA"
         state: directory
 
     - name: Touch your U2F device to generate the config file
@@ -45,26 +45,27 @@
       register: generated_pamu2fcfg
         
     - name: Store generated U2F config
+      ignore_errors: "{{ ansible_check_mode }}"
       copy:
         content: "{{ generated_pamu2fcfg.stdout_lines[1] }}"
-        dest: "{{ ansible_env.HOME }}/.config/Nitrokey/u2f_keys"
+        dest: "{{ ansible_env.HOME }}/.config/2FA/u2f_keys"
         mode: '0400'
 
     - name: Move the U2F config file
       become: true
       block:
         - name: Copy the U2F config file
+          ignore_errors: "{{ ansible_check_mode }}"
           copy:
-            src: "{{ ansible_env.HOME }}/.config/Nitrokey"
+            src: "{{ ansible_env.HOME }}/.config/2FA"
             dest: /etc
             mode: '0400'
-          ignore_errors: "{{ ansible_check_mode }}"
 
         - name: Remove the U2F config file
-          file:
-            path: "{{ ansible_env.HOME }}/.config/Nitrokey"
-            state: absent
           ignore_errors: "{{ ansible_check_mode }}"
+          file:
+            path: "{{ ansible_env.HOME }}/.config/2FA"
+            state: absent
 
     - name: Modify the Pluggable Authentication Module `PAM'
       become: true
@@ -79,8 +80,8 @@
             path: /etc/pam.d/common-auth
             # Add the following lines at the top of the file
             block: |
-              # Nitrokey FIDO2 config
-              auth    sufficient pam_u2f.so authfile=/etc/Nitrokey/u2f_keys cue [cue_prompt=Please touch your U2F device] prompt nouserok
+              # FIDO2 authn config
+              auth    sufficient pam_u2f.so authfile=/etc/2FA/u2f_keys cue [cue_prompt=Please touch your U2F device] prompt nouserok
             insertafter: '# here are the per-package modules \(the "Primary" block\)'
             state: present
-          when: ansible_distribution == 'Debian' and ansible_distribution_major_version == '12'
+          when: ansible_distribution == 'Debian' and ansible_distribution_major_version in ['12', '13']
