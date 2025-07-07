@@ -2,7 +2,7 @@
 - name: Install prerequisites
   become: true
   apt:
-    name: libfuse2
+    name: libfuse2  # AppImage support
     state: present
 
 - name: Make directory `Applications' if not exists
@@ -69,3 +69,9 @@
     # - ansible [core 2.18.4]
     # - desktop-file-validate 0.27
     validate: desktop-file-validate %s
+
+# To uninstall, simply delete these following files:
+# rm ~/.local/share/applications/cursor.desktop
+# rm ~/.local/share/icons/hicolor/1024x1024/apps/cursor.png
+# rm ~/.local/bin/cursor
+# rm ~/Applications/Cursor.AppImage
