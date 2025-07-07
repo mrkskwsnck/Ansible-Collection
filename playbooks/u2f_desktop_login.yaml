@@ -80,8 +80,8 @@
             path: /etc/pam.d/common-auth
             # Add the following lines at the top of the file
             block: |
-              # Nitrokey FIDO2 config
+              # FIDO2 authn config
               auth    sufficient pam_u2f.so authfile=/etc/2FA/u2f_keys cue [cue_prompt=Please touch your U2F device] prompt nouserok
             insertafter: '# here are the per-package modules \(the "Primary" block\)'
             state: present
-          when: ansible_distribution == 'Debian' and ansible_distribution_major_version == '12'
+          when: ansible_distribution == 'Debian' and ansible_distribution_major_version in ['12', '13']
