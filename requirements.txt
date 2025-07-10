@@ -1,4 +1,5 @@
 ansible-core
 ansible-lint
+pexpect
 pre-commit
 yamllint
