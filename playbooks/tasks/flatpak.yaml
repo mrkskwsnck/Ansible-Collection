@@ -42,6 +42,7 @@
         name: plasma-discover-backend-flatpak
         state: present
 
+    # This replaces the Flatseal flatpak
     - name: Install the Plasma System Settings module
       when: lookup('env', 'XDG_CURRENT_DESKTOP') == 'KDE'
       ansible.builtin.apt:
@@ -57,5 +58,6 @@
       ignore_errors: "{{ ansible_check_mode }}"   # flatpak executable not present
 
     - name: Install the Flatseal flatpak
+      when: lookup('env', 'XDG_CURRENT_DESKTOP') in ('GNOME', 'ubuntu:GNOME')
       community.general.flatpak:
         name: com.github.tchx84.Flatseal
