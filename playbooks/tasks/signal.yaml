@@ -8,23 +8,34 @@
 
   block:
     - name: Install Signal's official public software signing key
-      # See https://www.jeffgeerling.com/blog/2022/aptkey-deprecated-debianubuntu-how-fix-ansible
-      # for apt_key deprecation fix
+      block:
+        - name: Download public software signing key
+          # See https://www.jeffgeerling.com/blog/2022/aptkey-deprecated-debianubuntu-how-fix-ansible
+          # for apt_key deprecation fix
+          ansible.builtin.get_url:
+            url: https://updates.signal.org/desktop/apt/keys.asc
+            # Armored keys should use .asc extension, binary should use .gpg
+            dest: /usr/share/keyrings/signal-desktop-keyring.asc
+            owner: root
+            group: root
+            mode: "0644"
+            checksum: sha256:2aca20b81a56ba0fbe24bdf58a45023e58a38392d885068afe596785ccd95491
+            force: true   # Download every time to fail upon checksum change
+
+        - name: Dearmor public software signing key
+          ansible.builtin.command: >
+            gpg --batch --dearmor --output /usr/share/keyrings/signal-desktop-keyring.gpg
+            /usr/share/keyrings/signal-desktop-keyring.asc
+          args:
+            creates: /usr/share/keyrings/signal-desktop-keyring.gpg
+
+    - name: Add Signal's repository to your list of repositories and update the package database
       ansible.builtin.get_url:
-        url: https://updates.signal.org/desktop/apt/keys.asc
-        # Armored keys should use .asc extension, binary should use .gpg
-        dest: /usr/share/keyrings/signal-desktop-keyring.asc
+        url: https://updates.signal.org/static/desktop/apt/signal-desktop.sources
+        dest: /etc/apt/sources.list.d/signal-desktop.sources
         owner: root
         group: root
         mode: "0644"
-        checksum: sha256:2aca20b81a56ba0fbe24bdf58a45023e58a38392d885068afe596785ccd95491
-        force: true   # Download every time to fail upon checksum change
-
-    - name: Add Signal's repository to your list of repositories
-      ansible.builtin.apt_repository:
-        repo: deb [arch=amd64 signed-by=/usr/share/keyrings/signal-desktop-keyring.asc] https://updates.signal.org/desktop/apt xenial main
-        filename: signal-xenial
-        state: present
       notify: apt update
     
     - name: Force all notified handlers to run at this point, not waiting for normal sync points
