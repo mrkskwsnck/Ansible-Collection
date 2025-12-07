@@ -5,6 +5,40 @@
   gather_facts: true
 
   tasks:
+    - name: Wayland enablement
+      tags: wayland
+      block:
+        - name: Install missing dependency
+          when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
+          become: true
+          ansible.builtin.apt:
+            name:
+              - plasma-workspace-wayland
+            state: present
+
+        - name: Reconfigure input method
+          # See https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland#KDE_Plasma
+          tags: fcitx
+          when: ansible_lsb.id == 'Ubuntu' and ansible_lsb.codename == 'noble'
+          block:
+            - name: Set user environment variables
+              become: false
+              ansible.builtin.blockinfile:
+                path: "{{ ansible_user_dir }}/.config/environment.d/fcitx.conf"
+                owner: "{{ ansible_user_uid }}"
+                group: "{{ ansible_user_gid }}"
+                mode: '0644'
+                create: true
+                block: |
+                  XMODIFIERS=@im=fcitx
+                marker: "# {mark} ANSIBLE MANAGED BLOCK"
+              notify: Reload user environment
+
+            - name: Manual configuration hint
+              ansible.builtin.debug:
+                msg: "Run `im-config` and then selecting 'do not activate any IM from im-config
+                  and use desktop default'"
+
     - name: Unlock SSH keys by KWallet at login
       # See also https://wiki.archlinux.org/title/KDE_Wallet#Using_the_KDE_Wallet_to_store_ssh_key_passphrases
       when: ansible_lsb.id == 'Debian' and ansible_lsb.codename == 'bookworm' or
@@ -49,29 +83,6 @@
         - name: Add private keys to the SSH agent
           ansible.builtin.command: ssh-add -q
           changed_when: false
-
-    - name: Tweak Fcitx 5 for Wayland
-      # See https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland#KDE_Plasma
-      tags: fcitx
-      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
-      block:
-        - name: Set user environment variables
-          become: false
-          ansible.builtin.blockinfile:
-            path: "{{ ansible_user_dir }}/.config/environment.d/fcitx.conf"
-            owner: "{{ ansible_user_uid }}"
-            group: "{{ ansible_user_gid }}"
-            mode: '0644'
-            create: true
-            block: |
-              XMODIFIERS=@im=fcitx
-            marker: "# {mark} ANSIBLE MANAGED BLOCK"
-          notify: Reload user environment
-
-        - name: Manual configuration hint
-          ansible.builtin.debug:
-            msg: "Run `im-config` and then selecting 'do not activate any IM from im-config
-              and use desktop default'"
 
   handlers:
     - name: Reload user environment
