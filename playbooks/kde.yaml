@@ -4,6 +4,15 @@
   connection: local
   gather_facts: true
 
+  pre_tasks:
+    - name: Create drop-in folder for user's systemd environment files
+      ansible.builtin.file:
+        path: "{{ ansible_user_dir }}/.config/environment.d"
+        owner: "{{ ansible_user_uid }}"
+        group: "{{ ansible_user_gid }}"
+        mode: '0755'
+        state: directory
+
   tasks:
     - name: Wayland enablement
       tags: wayland
@@ -21,7 +30,7 @@
           tags: fcitx
           when: ansible_lsb.id == 'Ubuntu' and ansible_lsb.codename == 'noble'
           block:
-            - name: Set user environment variables
+            - name: Set user environment variable
               become: false
               ansible.builtin.blockinfile:
                 path: "{{ ansible_user_dir }}/.config/environment.d/fcitx.conf"
@@ -45,7 +54,7 @@
         ansible_lsb.id == 'Ubuntu' and ansible_lsb.codename == 'noble'
       tags: ssh-agent
       block:
-        - name: Install prerequisites
+        - name: Install dependencies
           become: true
           ansible.builtin.apt:
             name:
@@ -53,29 +62,31 @@
               - ksshaskpass
             state: present
 
-        - name: Create drop-in folder for systemd environment files
-          ansible.builtin.file:
-            path: "{{ ansible_user_dir }}/.config/environment.d"
-            owner: "{{ ansible_user_uid }}"
-            group: "{{ ansible_user_gid }}"
-            mode: '0755'
-            state: directory
-
-        - name: Copy systemd environment file
-          ansible.builtin.copy:
-            src: ssh-askpass.conf
-            dest: "{{ ansible_user_dir }}/.config/environment.d/ssh-askpass.conf"
+        - name: Set user environment variables
+          ansible.builtin.blockinfile:
+            path: "{{ ansible_user_dir }}/.config/environment.d/ssh-askpass.conf"
             owner: "{{ ansible_user_uid }}"
             group: "{{ ansible_user_gid }}"
             mode: '0644'
+            create: true
+            block: |
+              SSH_ASKPASS=/usr/bin/ksshaskpass
+              SSH_ASKPASS_REQUIRE=prefer
+            marker: "# {mark} ANSIBLE MANAGED BLOCK"
+          notify: Reload user environment
 
-        - name: Copy desktop entry for autostart
+        - name: Create desktop entry for autostart
           ansible.builtin.copy:
-            src: ssh-add.desktop
             dest: "{{ ansible_user_dir }}/.config/autostart/ssh-add.desktop"
             owner: "{{ ansible_user_uid }}"
             group: "{{ ansible_user_gid }}"
             mode: '0644'
+            content: |
+              # ANSIBLE MANAGED FILE
+              [Desktop Entry]
+              Exec=ssh-add -q
+              Name=ssh-add
+              Type=Application
             # TODO Validate does not comply to tempfile w/o .desktop extension with desktop-file-utils v0.26
             # Though, does work with v0.27
             validate: desktop-file-validate %s
