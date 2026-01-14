@@ -13,8 +13,8 @@
           apt:
             package:
               - docker.io
-              - docker-doc
               - docker-compose
+              - docker-doc
               - podman-docker
               - containerd
               - runc
@@ -28,8 +28,18 @@
           when: cleanup | default('false') | bool
 
         - name: Install Docker Engine on Debian stable
-          when: ansible_distribution_release != 'trixie'
+          when: ansible_distribution_release in ['bookworm', 'trixie']
           block:
+            - name: Install prerequisites
+              apt:
+                package:
+                  - ca-certificates
+                  - curl
+
+            - name: Install keyrings
+              command: >
+                install --mode 0755 --directory /etc/apt/keyrings
+              
             - name: Add Docker's official GPG key
               block:
                 - file:
@@ -51,11 +61,21 @@
                     checksum: sha256:1500c1f56fa9e26b9b8f42452a553675796ade0807cdce11975eb98170b3a570
                     force: true   # Download every time to fail upon checksum change
 
-
             - name: Add the repository to Apt sources
+              when: ansible_distribution_release == 'bookworm'
               apt_repository:
                 repo: "deb [arch={% if ansible_architecture == 'x86_64' %}amd64{% else %}{{ ansible_architecture }}{% endif %} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
-              failed_when: false
+              failed_when: false    # Couldn't remember
+
+            - name: Add the repository to Apt sources (deb822)
+              when: ansible_distribution_release == 'trixie'
+              deb822_repository:
+                name: docker
+                types: deb
+                uris: https://download.docker.com/linux/debian
+                suites: "{{ ansible_distribution_release }}"
+                components: stable
+                signed_by: /etc/apt/keyrings/docker.asc
 
             - name: Install the Docker packages
               apt:
@@ -66,14 +86,11 @@
                   - docker-buildx-plugin
                   - docker-compose-plugin
 
-        - name: Install Docker Engine on Debian testing
-          when: ansible_distribution_release == 'trixie'
-          block:
-            - name: Install the Docker packages
-              apt:
-                package:
-                  - docker.io
-                  - docker-compose
+            - name: Start the Docker service automatically
+              systemd:
+                name: docker
+                state: started
+                enabled: true
 
         - name: Create the `docker' group
           ansible.builtin.group:
