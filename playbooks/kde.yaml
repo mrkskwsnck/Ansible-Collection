@@ -50,11 +50,11 @@
 
     - name: Unlock SSH keys by KWallet at login
       # See also https://wiki.archlinux.org/title/KDE_Wallet#Using_the_KDE_Wallet_to_store_ssh_key_passphrases
-      when: ansible_lsb.id == 'Debian' and ansible_lsb.codename == 'bookworm' or
+      when: ansible_lsb.id == 'Debian' and ansible_lsb.codename in ['bookworm', 'trixie'] or
         ansible_lsb.id == 'Ubuntu' and ansible_lsb.codename == 'noble'
       tags: ssh-agent
       block:
-        - name: Install dependencies
+        - name: Install dependencies for SSH to ask for password
           become: true
           ansible.builtin.apt:
             name:
@@ -62,7 +62,7 @@
               - ksshaskpass
             state: present
 
-        - name: Set user environment variables
+        - name: Set user environment variables for SSH to ask for password
           ansible.builtin.blockinfile:
             path: "{{ ansible_user_dir }}/.config/environment.d/ssh-askpass.conf"
             owner: "{{ ansible_user_uid }}"
@@ -75,7 +75,7 @@
             marker: "# {mark} ANSIBLE MANAGED BLOCK"
           notify: Reload user environment
 
-        - name: Create desktop entry for autostart
+        - name: Create desktop entry for the SSH agent to autostart
           ansible.builtin.copy:
             dest: "{{ ansible_user_dir }}/.config/autostart/ssh-add.desktop"
             owner: "{{ ansible_user_uid }}"
